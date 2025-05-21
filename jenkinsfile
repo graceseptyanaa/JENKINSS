@@ -2,26 +2,46 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'laravel-app'
+        DOCKER_COMPOSE_CMD = "docker-compose -f docker-compose.yml"
     }
 
     stages {
-        stage('Clone Repo') {   
+        stage('Clone Repository') {
             steps {
                 git branch: 'master', url: 'https://github.com/graceseptyanaa/JENKINSS.git'
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build Docker Containers') {
             steps {
-                 sh "docker build"
+                sh "${DOCKER_COMPOSE_CMD} build"
             }
         }
 
-        stage('Run Docker Container') {
+        stage('Run Containers') {
             steps {
-                sh "docker run -d -p 8000:8000 --name laravel-container $DOCKER_IMAGE"
+                sh "${DOCKER_COMPOSE_CMD} up -d"
             }
+        }
+
+        stage('Composer Install') {
+            steps {
+                sh "${DOCKER_COMPOSE_CMD} exec app composer install"
+            }
+        }
+
+        stage('Laravel Setup') {
+            steps {
+                sh "${DOCKER_COMPOSE_CMD} exec app cp .env.example .env"
+                sh "${DOCKER_COMPOSE_CMD} exec app php artisan key:generate"
+                sh "${DOCKER_COMPOSE_CMD} exec app php artisan migrate --force"
+            }
+        }
+    }
+
+    post {
+        always {
+            sh "${DOCKER_COMPOSE_CMD} logs --tail=100"
         }
     }
 }
