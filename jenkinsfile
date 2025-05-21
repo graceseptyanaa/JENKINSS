@@ -1,26 +1,22 @@
 pipeline {
     agent any
-
-    environment {
-        DOCKER_IMAGE = 'laravel-app'
-    }
-
+    
     stages {
-        stage('Clone Repo') {   
+        stage('Clone Repo') {
             steps {
-                git branch: 'master', url: 'https://github.com/graceseptyanaa/JENKINSS.git'
+                git 'https://github.com/graceseptyanaa/JENKINSS.git'
             }
         }
-
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $DOCKER_IMAGE .'
+                // Menggunakan bat untuk Windows alih-alih sh
+                bat 'docker build -t nama-image .'
             }
         }
-
         stage('Run Docker Container') {
             steps {
-                sh 'docker run -d -p 8000:8000 --name laravel-container $DOCKER_IMAGE'
+                // Menggunakan bat untuk Windows alih-alih sh
+                bat 'docker run -d -p 8080:80 nama-image'
             }
         }
     }
